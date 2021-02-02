@@ -1,0 +1,128 @@
+//===-- cxx_loop_proto.proto - Protobuf description of C++ with for loops -===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+///
+/// \file
+///  This file describes a subset of C++ as a protobuf. It is used to
+///  more easily find interesting inputs for fuzzing LLVM's vectorizer.
+///  This subset differs from the one defined in cxx_proto.proto by eliminating
+///  while loops and conditionals. The goal is that the C++ code generated will
+///  be more likely to stress the LLVM loop vectorizer. The code generated will
+///  contain either a single loop or two nested loops.
+///
+//===----------------------------------------------------------------------===//
+
+syntax = "proto2";
+
+message CatchClause {
+  required CompoundStatement compound_statement = 1;
+}
+
+message FinallyClause {
+  required CompoundStatement compound_statement = 1;
+}
+
+message CatchFinallyClause {
+  required CatchClause catch_clause = 1;
+  required FinallyClause finally_clause = 2;
+}
+
+
+message TryStatement {
+  required CompoundStatement compount_statement = 1;
+  oneof catch_finally_clause_oneof {
+      CatchClause catch_clause = 2;
+      FinallyClause finally_clause = 3;
+      CatchFinallyClause catch_finally_clause = 4;
+  }
+}
+
+message FunctionDefinitionStatement {
+
+}
+
+message Expression {
+
+}
+
+message ElseClause {
+  required Statement statement = 1;
+}
+
+message IfStatement {
+  required Expression expression = 1;
+  repeated ElseClause else_clauses = 2;
+}
+
+message SwitchStatement {
+
+}
+
+message CompoundWhile {
+  required CompoundStatement compound_statement = 1;
+}
+
+message LabelWhile {
+  required StatementList statement_list = 1;
+}
+
+message WhileStatement {
+  required Expression expression = 1;
+  oneof while_oneof {
+    CompoundWhile compound_while = 2;
+    LabelWhile label_while = 3;
+  }
+}
+
+message DoStatement {
+  required Expression expression = 1;
+  required Statement statement = 2;
+}
+
+message ForStatement {
+
+}
+
+message IterationStatement {
+  oneof iteration_oneof {
+    WhileStatement while_statement = 1;
+    DoStatement do_statement = 2;
+//    ForStatement for_statement = 3;
+  }
+}
+
+message SelectionStatement {
+  oneof statement_oneof {
+    IfStatement if_statement = 1;
+//    SwitchStatement switch_statement = 2;
+  }
+}
+
+message CompoundStatement {
+  required StatementList statement_list = 1;
+}
+
+message Statement {
+  oneof statement_oneof {
+    CompoundStatement compound_statement = 1;
+    SelectionStatement selection_statement = 2;
+    IterationStatement iteration_statement = 3;
+    TryStatement try_statement = 4;
+    FunctionDefinitionStatement function_definition_statement = 5;
+
+  }
+}
+
+message StatementList {
+  repeated Statement statement = 1;
+}
+
+message PhpStructure {
+  required StatementList statement_list = 1;
+}
+
+package php_proto_fuzzer;
